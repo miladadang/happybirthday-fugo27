@@ -296,6 +296,8 @@ iframe.ym{width:100%;height:244px;border:0;border-radius:22px;background:var(--a
 .screen.center .pill{align-self:stretch}
 .tk-in .pill{width:100%;margin:12px 0 18px}
 .row .pill{flex:1;width:auto}.popper{flex:none}
+.tk-d{font-size:14.5px;line-height:1.35;font-weight:500;color:#444;margin-top:6px}
+.tk-in{border-top:0;padding-top:0}
 </style>
 </head>
 <body>
@@ -831,15 +833,15 @@ push(27, 'Next chapter', `
   });
 }});
 
-const TICKETS = [("MASSAGE PASS", "30 минут массажа", "Без вопросов. Просто ложишься и расслабляешься.", "💆"), ("COFFEE IN BED", "Кофе и завтрак в постель", "В комплекте любимый человек.", "☕"), ("HUGS UNLIMITED", "Безлимитные обнимашки", "Срок действия: не ограничен.", "🫂"), ("PHONE OFF", "Вечер без телефонов", "Только мы, еда, разговоры и всё остальное потом.", "📵"), ("ONE WISH", "Одно желание, но я всё равно подумаю", "(в рамках разумного)", "🧞")];
+const TICKETS = [["MASSAGE PASS", "30 минут массажа", "Без вопросов. Просто ложишься и расслабляешься.", "💆"], ["COFFEE IN BED", "Кофе и завтрак в постель", "В комплекте любимый человек", "☕"], ["HUGS UNLIMITED", "Безлимитные обнимашки", "Срок действия: не ограничен.", "🫂"], ["PHONE OFF", "Вечер без телефонов", "Только мы, еда, разговоры и всё остальное потом.", "📵"], ["ONE WISH", "Одно желание, но я все равно подумаю", "(В рамках разумного)", "🧞"]];
 
 push(28, 'Bonus', `
   <h2 class="r" ${rise(0)}>Маленькие бонусы в честь твоего дня рождения</h2>
   <div class="passhead r" ${rise(1)}><b>🎟️ FUGO PASS — 27</b><span id="pcnt">0 / 5 активировано</span></div>
   <div class="tickets">
     ${TICKETS.map(([t, h, d, e], i) => `<div class="tk r" ${rise(i + 2)}>
-      <div class="tk-top"><div class="tk-e">${e}</div><div><div class="tk-n">0${i + 1} — ${t}</div><div class="tk-h">${h}</div></div><div class="tk-a">↓</div></div>
-      <div class="tk-body"><div class="tk-in"><p>${d}</p><button class="pill acc-bg tk-act">Активировать</button></div></div>
+      <div class="tk-top"><div class="tk-e">${e}</div><div><div class="tk-n">0${i + 1} — ${t}</div><div class="tk-h">${h}</div><div class="tk-d">${d}</div></div><div class="tk-a">↓</div></div>
+      <div class="tk-body"><div class="tk-in"><button class="pill acc-bg tk-act">Активировать</button></div></div>
       <div class="tk-stamp">использовано</div>
     </div>`).join('')}
   </div>
