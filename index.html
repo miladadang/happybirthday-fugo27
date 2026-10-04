@@ -262,6 +262,33 @@ iframe.ym{width:100%;height:244px;border:0;border-radius:22px;background:var(--a
 .paper p:last-child{margin-bottom:0}
 .paper .psign{color:var(--acc);font-size:28px}
 .screen:has(.paper) .pill{margin-top:20px}
+
+.gr{width:100%;display:block}
+.gt{font-family:var(--disp);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.gf{animation:fade .6s .3s both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.passhead{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--disp);font-size:12px;font-weight:800;text-transform:uppercase}
+.passhead span{color:var(--acc);font-size:10px;text-align:right}
+.tickets{display:flex;flex-direction:column;gap:14px}
+.tk{position:relative;background:#fff;border:1.5px solid var(--ink);border-radius:16px;overflow:hidden;box-shadow:0 8px 20px rgba(60,10,20,.1);transition:opacity .4s,background .3s}
+.tk::before,.tk::after{content:"";position:absolute;top:50%;width:18px;height:18px;margin-top:-9px;border-radius:50%;background:var(--bg);border:1.5px solid var(--ink);z-index:2}
+.tk::before{left:-10px}.tk::after{right:-10px}
+.tk-top{display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;border-left:6px solid var(--acc)}
+.tk-e{font-size:32px;flex:none}
+.tk-n{font-family:var(--disp);font-size:10px;letter-spacing:.1em;color:var(--acc);font-weight:800}
+.tk-h{font-weight:800;font-size:17px;line-height:1.2;margin-top:3px}
+.tk-a{margin-left:auto;font-weight:800;color:var(--acc);transition:transform .3s}
+.tk.open .tk-a{transform:rotate(180deg)}
+.tk-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s}
+.tk.open .tk-body{grid-template-rows:1fr}
+.tk-in{overflow:hidden;border-top:2px dashed var(--line);margin:0 20px}
+.tk-in p{font-size:16px;padding-top:14px}
+.tk-in .pill{margin:12px 0 18px;padding:12px 22px;font-size:14px}
+.tk-stamp{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:22px;text-transform:uppercase;color:var(--acc);letter-spacing:.06em;opacity:0;transform:rotate(-8deg) scale(2);pointer-events:none;transition:opacity .3s,transform .35s cubic-bezier(.3,1.4,.5,1)}
+.tk-stamp::after{content:"";position:absolute;inset:26% 8%;border:3px solid var(--acc);border-radius:10px}
+.tk.used{background:var(--acc-soft)}
+.tk.used .tk-top{opacity:.45}
+.tk.used .tk-stamp{opacity:1;transform:rotate(-8deg) scale(1)}
 </style>
 </head>
 <body>
@@ -423,16 +450,27 @@ push(4, 'One day', `
 
 push(5, 'Don’t stop', `
   <h2 class="r" ${rise(0)}>Если тебе кажется, что ничего не получается</h2>
-  <div class="memebox r" ${rise(1)}>
-    <img class="memeimg" src="meme.jpg" alt="" onerror="this.remove()" onload="this.parentNode.querySelector('.meme').remove()">
-    <div class="meme">
-      <div class="mrow no"><div class="mface">😩</div><div class="mtxt">ничего не получается</div></div>
-      <div class="mrow yes"><div class="mface">😎</div><div class="mtxt">тебе КАЖЕТСЯ</div></div>
-    </div>
-  </div>
+  <svg class="gr r" ${rise(1)} id="gr" viewBox="0 0 320 180"></svg>
   <p class="r" ${rise(3)}>Это просто часть твоего пути. Просто продолжай идти.</p>
   <button class="pill acc-bg r" data-next ${rise(4)}>Иду →</button>
-`);
+`, { onEnter: (el) => {
+  const svg = el.querySelector('#gr');
+  let real = '', feel = '';
+  for (let x = 10; x <= 310; x += 10) {
+    const k = (x - 10) / 300;
+    const yr = 150 - k * 110 + Math.sin(x / 14) * 9 * (1 - k * .4);
+    real += `${x === 10 ? 'M' : 'L'}${x} ${yr.toFixed(1)} `;
+    const yf = 120 + Math.sin(x / 10) * 22 - Math.cos(x / 23) * 8;
+    feel += `${x === 10 ? 'M' : 'L'}${x} ${yf.toFixed(1)} `;
+  }
+  svg.innerHTML = `<rect x="0" y="0" width="320" height="180" rx="18" fill="#faf6f6"/>
+    <path d="M10 165 H310 M10 165 V12" stroke="#cfc6c8" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="${feel}" fill="none" stroke="#b7adb0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 7" class="gf"/>
+    <path d="${real}" pathLength="1" class="wp" style="animation-delay:.9s;stroke-width:4"/>
+    <circle cx="310" cy="${(150 - 110 + Math.sin(310 / 14) * 9 * .6).toFixed(1)}" r="6" class="wd" style="animation-delay:3.6s"/>
+    <text x="16" y="26" class="gt" fill="#8a8284">кажется</text>
+    <text x="16" y="42" class="gt" fill="#6d1a2b">на самом деле</text>`;
+}});
 
 push(6, 'Believe', `
   <p class="r" ${rise(0)}>Есть одна вещь, которую я очень хочу тебе пожелать.</p>
@@ -484,7 +522,7 @@ push(7, 'Not the end', `
         if (carry) { cx = x; ty = TOP + L + 8; } else if (u >= 3.5) { cx = X0; ty = G - BH * (i + 1); } else { cx = XS; ty = G - BH; }
       } else vis = false;
       b.style.display = vis ? '' : 'none';
-      b.setAttribute('transform', `translate(${cx - BW / 2} ${ty})`);
+      if (vis) b.setAttribute('transform', `translate(${cx - BW / 2} ${ty})`);
     });
     raf = requestAnimationFrame(frame);
   };
@@ -781,9 +819,34 @@ push(27, 'Next chapter', `
   <button class="pill acc-bg r" id="finalBtn" style="animation-delay:1.4s">PLAY NEXT CHAPTER →</button>
 `, { dark: true, cls: 'center', btn: false, onEnter: (el) => {
   el.querySelector('#finalBtn').addEventListener('click', () => {
-    confetti(3);
-    const b = el.querySelector('#finalBtn');
-    b.textContent = 'to be continued…'; b.disabled = true; b.style.opacity = .7;
+    confetti(2);
+    setTimeout(next, 700);
+  });
+}});
+
+const TICKETS = [("MASSAGE PASS", "30 минут массажа", "Без вопросов. Просто ложишься и расслабляешься.", "💆"), ("COFFEE IN BED", "Кофе и завтрак в постель", "В комплекте любимый человек.", "☕"), ("HUGS UNLIMITED", "Безлимитные обнимашки", "Срок действия: не ограничен.", "🫂"), ("PHONE OFF", "Вечер без телефонов", "Только мы, еда, разговоры и всё остальное потом.", "📵"), ("ONE WISH", "Одно желание, но я всё равно подумаю", "(в рамках разумного)", "🧞")];
+
+push(28, 'Bonus', `
+  <h2 class="r" ${rise(0)}>Маленькие бонусы в честь твоего дня рождения</h2>
+  <div class="passhead r" ${rise(1)}><b>🎟️ FUGO PASS — 27</b><span id="pcnt">0 / 5 активировано</span></div>
+  <div class="tickets">
+    ${TICKETS.map(([t, h, d, e], i) => `<div class="tk r" ${rise(i + 2)}>
+      <div class="tk-top"><div class="tk-e">${e}</div><div><div class="tk-n">0${i + 1} — ${t}</div><div class="tk-h">${h}</div></div><div class="tk-a">↓</div></div>
+      <div class="tk-body"><div class="tk-in"><p>${d}</p><button class="pill acc-bg tk-act">Активировать</button></div></div>
+      <div class="tk-stamp">использовано</div>
+    </div>`).join('')}
+  </div>
+  <p class="small mute r" ${rise(8)}>Количество активаций: 1<br>Передача третьим лицам запрещена.<br>Продлению не подлежит.<br>Владелец: Бусин, 27</p>
+`, { btn: false, onEnter: (el) => {
+  const cnt = el.querySelector('#pcnt');
+  el.querySelectorAll('.tk').forEach(tk => {
+    tk.querySelector('.tk-top').addEventListener('click', () => tk.classList.toggle('open'));
+    tk.querySelector('.tk-act').addEventListener('click', () => {
+      tk.classList.add('used'); tk.classList.remove('open'); confetti(.6);
+      const n = el.querySelectorAll('.tk.used').length;
+      cnt.textContent = n + ' / 5 активировано';
+      if (n === 5) { setTimeout(() => confetti(2.5), 300); }
+    });
   });
 }});
 
@@ -832,7 +895,7 @@ stage.addEventListener('click', (e) => {
   const t = e.target;
   if (t.closest('[data-pop]')) { confetti(1); return; }
   if (t.closest('[data-next]')) { confetti(.5); next(); return; }
-  if (t.closest('button, a, iframe, .tarot, .slider, .gnav, .envwrap')) return;
+  if (t.closest('button, a, iframe, .tarot, .slider, .gnav, .envwrap, .tk')) return;
   const x = e.clientX - app.getBoundingClientRect().left;
   if (x < app.clientWidth * 0.3) prev(); else next();
 });
