@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex">
+<title>FUGO / 27</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Manrope:wght@400;500;700&family=Unbounded:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff; --ink:#0b0b0b; --acc:#6d1a2b; --acc-soft:#f3e6e9; --mute:#8a8284; --line:#e9e4e5;
+  --disp:'Unbounded','Manrope',system-ui,sans-serif; --body:'Manrope',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#efeaea;color:var(--ink);font-family:var(--body);overscroll-behavior:none}
+body{display:flex;justify-content:center;align-items:center}
+#app{position:relative;width:100%;height:100dvh;max-width:460px;background:var(--bg);overflow:hidden}
+@media(min-width:520px){#app{height:min(900px,96dvh);border-radius:36px;box-shadow:0 30px 80px rgba(60,10,20,.18)}}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+
+/* progress */
+#bar{position:absolute;top:0;left:0;right:0;display:flex;gap:2px;padding:calc(env(safe-area-inset-top) + 12px) 14px 0;z-index:20;pointer-events:none;opacity:0;transition:opacity .4s}
+#bar.on{opacity:1}
+#bar i{flex:1;height:2px;border-radius:2px;background:rgba(0,0,0,.13);overflow:hidden;position:relative}
+#bar i::after{content:"";position:absolute;inset:0;background:var(--ink);transform:scaleX(0);transform-origin:left;transition:transform .35s}
+#bar i.done::after{transform:scaleX(1)}
+#app.dark #bar i{background:rgba(255,255,255,.2)}
+#app.dark #bar i::after{background:#fff}
+
+/* screens */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 44px) 26px calc(env(safe-area-inset-bottom) + 28px);overflow-y:auto;overflow-x:hidden;background:var(--bg);animation:enter .5s cubic-bezier(.2,.8,.2,1) both}
+.screen.back{animation-name:enterBack}
+@keyframes enter{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes enterBack{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+.screen.dark{background:var(--ink);color:#fff}
+.inner{margin:auto 0;display:flex;flex-direction:column;gap:18px;width:100%}
+.inner.top{margin-top:8px}
+
+.tag{font-family:var(--disp);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);display:flex;align-items:center;gap:10px}
+.tag::before{content:"";width:22px;height:1px;background:currentColor}
+.dark .tag{color:#d99aa8}
+h1,h2{font-family:var(--disp);font-weight:800;line-height:1.02;letter-spacing:-.03em;text-transform:uppercase}
+h2{font-size:clamp(27px,8.4vw,36px)}
+.huge{font-size:clamp(70px,25vw,112px);line-height:.88;letter-spacing:-.06em}
+p{font-size:clamp(17px,4.9vw,20px);line-height:1.45;font-weight:500}
+p.lead{font-size:clamp(20px,5.8vw,24px);line-height:1.3;font-weight:700;letter-spacing:-.01em}
+.mute{color:var(--mute)}
+.acc{color:var(--acc)}
+.dark .mute{color:#8f8789}
+.small{font-size:14px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.sp{height:6px}
+.big27{font-size:clamp(110px,40vw,170px)}
+.row{display:flex;align-items:center;gap:14px}
+h1.huge,.huge{font-family:var(--disp);font-weight:800;text-transform:uppercase}
+
+.pill{align-self:flex-start;display:inline-flex;align-items:center;gap:10px;padding:16px 28px;border-radius:999px;background:var(--ink);color:#fff;font-weight:700;font-size:16px;letter-spacing:.01em;transition:transform .15s,background .2s}
+.pill:active{transform:scale(.95)}
+.pill.acc-bg{background:var(--acc)}
+.pill.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.dark .pill{background:#fff;color:var(--ink)}
+.dark .pill.acc-bg{background:var(--acc);color:#fff}
+.chip{display:inline-block;padding:8px 14px;border-radius:999px;background:var(--acc-soft);color:var(--acc);font-weight:700;font-size:14px}
+
+/* staggered reveal */
+.r{opacity:0;transform:translateY(14px);animation:rise .6s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+
+/* gate */
+#gate{position:absolute;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;justify-content:center;gap:22px;padding:30px 28px;transition:opacity .5s,transform .5s}
+#gate.gone{opacity:0;transform:scale(1.04);pointer-events:none}
+#gate .brand{font-family:var(--disp);font-weight:800;font-size:clamp(54px,18vw,80px);line-height:.9;letter-spacing:-.05em}
+#gate .brand span{color:var(--acc)}
+.pin{display:flex;gap:12px}
+.pin input{width:100%;height:64px;border-radius:999px;border:1.5px solid var(--ink);padding:0 26px;font-family:var(--disp);font-size:22px;letter-spacing:.3em;background:transparent;outline:none;text-align:center}
+.pin input:focus{border-color:var(--acc)}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+#hint{min-height:20px;font-size:14px;color:var(--mute)}
+
+/* tracker */
+.track{position:relative;padding:22px 18px;border-radius:26px;background:var(--acc-soft)}
+.track .cities{display:flex;justify-content:space-between;font-family:var(--disp);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.track .rail{position:relative;height:30px;margin:12px 4px 10px}
+.track .rail::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:2px dashed rgba(109,26,43,.35)}
+.track .rail b{position:absolute;top:50%;left:0;height:2px;background:var(--acc);width:0;animation:go 3.2s .8s cubic-bezier(.5,0,.2,1) forwards}
+.track .box{position:absolute;top:0;left:0;font-size:22px;animation:gobox 3.2s .8s cubic-bezier(.5,0,.2,1) forwards;transform:translateX(0)}
+@keyframes go{to{width:62%}}
+@keyframes gobox{to{left:calc(62% - 12px)}}
+.track .dot{position:absolute;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:var(--acc)}
+.track .dot.a{left:-4px}.track .dot.b{right:-4px;background:#fff;box-shadow:inset 0 0 0 2px var(--acc)}
+.track .st{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700}
+.live{display:inline-flex;align-items:center;gap:7px}
+.live::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--acc);animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.2}}
+.popper{width:84px;height:84px;border-radius:50%;background:var(--ink);font-size:38px;display:grid;place-items:center;align-self:flex-start;transition:transform .2s}
+.popper:active{transform:scale(.88) rotate(-14deg)}
+
+/* lists */
+.list{display:flex;flex-direction:column}
+.list li{list-style:none;display:flex;gap:14px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--line);font-weight:700;font-size:clamp(16px,4.6vw,19px)}
+.list li span{font-family:var(--disp);font-size:11px;color:var(--acc);min-width:24px}
+.list li.tired{color:var(--mute);font-weight:500;border-bottom:0}
+.stickers{display:flex;flex-wrap:wrap;gap:8px}
+.stickers span{padding:9px 14px;border-radius:999px;background:var(--acc);color:#fff;font-weight:700;font-size:15px;opacity:0;animation:pop .5s cubic-bezier(.3,1.6,.5,1) forwards}
+.stickers span:nth-child(3n+1){transform:rotate(-3deg)}
+.stickers span:nth-child(3n+2){background:var(--ink)}
+@keyframes pop{from{opacity:0;transform:scale(.4)}to{opacity:1}}
+.quals{display:flex;flex-direction:column;gap:6px}
+.quals div{font-family:var(--disp);font-weight:800;text-transform:uppercase;font-size:clamp(20px,6.4vw,28px);letter-spacing:-.03em}
+.quals div em{font-style:normal;color:var(--acc)}
+
+/* cat */
+.cat{font-size:92px;line-height:1;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-4deg)}}
+.load{height:14px;border-radius:999px;background:var(--line);overflow:hidden}
+.load i{display:block;height:100%;width:0;background:var(--acc);border-radius:999px;animation:stuck 4.5s infinite}
+@keyframes stuck{0%{width:0}20%{width:6%}30%{width:6%}45%{width:11%}60%{width:3%}100%{width:3%}}
+.code{font-family:var(--disp);font-size:12px;letter-spacing:.06em}
+
+/* forecast */
+.fc{display:flex;flex-direction:column}
+.fc div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 0;border-bottom:1px solid var(--line);font-weight:700;font-size:clamp(16px,4.7vw,19px)}
+.fc div b{font-family:var(--disp);font-size:13px;color:var(--acc);white-space:nowrap}
+.fc .up{display:inline-block;animation:upd 1.6s ease-in-out infinite}
+@keyframes upd{50%{transform:translateY(-4px)}}
+
+/* tarot */
+.tw{align-self:center}
+.tarot{width:min(62vw,240px);aspect-ratio:2/3.3;perspective:1000px}
+.tarot .c{position:relative;width:100%;height:100%;transition:transform .9s cubic-bezier(.3,1.1,.4,1);transform-style:preserve-3d}
+.tarot.flip .c{transform:rotateY(180deg)}
+.tarot .f{position:absolute;inset:0;border-radius:22px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px}
+.tarot .back{background:var(--acc);color:#fff;box-shadow:inset 0 0 0 6px var(--acc),inset 0 0 0 7.5px rgba(255,255,255,.5)}
+.tarot .back .st{font-size:64px;line-height:1}
+.tarot .back small{font-family:var(--disp);font-size:10px;letter-spacing:.2em;margin-top:14px;opacity:.85}
+.tarot .front{background:#fff;color:var(--ink);transform:rotateY(180deg);box-shadow:inset 0 0 0 1.5px var(--ink);gap:10px}
+.tarot .front .n{font-family:var(--disp);font-size:11px;letter-spacing:.2em;color:var(--acc)}
+.tarot .front .t{font-family:var(--disp);font-weight:800;font-size:22px;text-transform:uppercase;line-height:1}
+.tarot .front .s{font-size:44px}
+.tarot:not(.flip){animation:wob 2.8s ease-in-out infinite}
+@keyframes wob{50%{transform:rotate(2.5deg) translateY(-5px)}}
+
+/* polaroid slider */
+.screen.gscreen{padding-left:0;padding-right:0}
+.gscreen .tag,.gscreen h2,.gscreen .gnav{margin-left:26px;margin-right:26px}
+.slider{display:flex;gap:0;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:18px 11% 26px;margin:0;-webkit-overflow-scrolling:touch}
+.slider::-webkit-scrollbar{display:none}
+.slide{flex:0 0 78%;scroll-snap-align:center;display:flex;justify-content:center;align-items:center;transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .45s;transform:rotate(var(--rot,0deg)) scale(.86);opacity:.55}
+.slide.on{transform:rotate(0) scale(1);opacity:1}
+.polaroid{background:#fff;padding:12px 12px 0;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.08),0 14px 34px rgba(60,10,20,.2);display:flex;flex-direction:column;max-width:100%}
+.polaroid img{display:block;max-width:100%;max-height:min(50dvh,430px);width:auto;height:auto;background:var(--acc-soft);border-radius:2px}
+.polaroid figcaption{font-family:'Caveat','Manrope',cursive;font-size:24px;color:#2a2a2a;text-align:center;padding:10px 0 14px;min-height:52px;line-height:1.1}
+.gnav{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.gnav .cnt{font-family:var(--disp);font-size:13px;letter-spacing:.1em}
+.gnav .cnt b{color:var(--acc)}
+.rb{width:52px;height:52px;border-radius:50%;background:var(--ink);color:#fff;font-size:20px;display:grid;place-items:center;transition:transform .15s}
+.rb:active{transform:scale(.9)}
+.rb.l{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+
+iframe.ym{width:100%;height:244px;border:0;border-radius:22px;background:var(--acc-soft)}
+
+.letter p{margin-bottom:12px}
+.sign{font-family:var(--disp);font-weight:800;font-size:22px;color:var(--acc);text-transform:uppercase;letter-spacing:-.02em}
+
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:40}
+.hintnav{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 8px);text-align:center;font-size:11px;color:var(--mute);letter-spacing:.14em;text-transform:uppercase;z-index:10;pointer-events:none;opacity:0;transition:opacity .4s}
+.hintnav.on{opacity:.9}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="bar"></div>
+  <div id="stage"></div>
+  <div class="hintnav" id="hn">тап → дальше</div>
+  <canvas id="fx"></canvas>
+
+  <div id="gate">
+    <div class="tag">private · for Бусин</div>
+    <div class="brand">FUGO<br><span>/ 27</span></div>
+    <p class="mute" style="font-size:16px">Тут всё только для одного человека. Введи пароль.</p>
+    <form class="pin" id="pinForm">
+      <input id="pin" type="tel" inputmode="numeric" maxlength="6" placeholder="•  •" autocomplete="off" aria-label="Пароль">
+    </form>
+    <button class="pill acc-bg" id="pinBtn" style="align-self:stretch;justify-content:center">Открыть</button>
+    <div id="hint"></div>
+  </div>
+</div>
+
+<script>
+/* ============ настройки ============ */
+const PASSWORD = '27';
+// Фото: положи файлы в папку photos/ и впиши имена, например ['photos/1.jpg','photos/2.jpg']
+const PHOTOS = Array.from({length: 19}, (_, i) => `photos/p${String(i + 1).padStart(2, '0')}.jpg`);
+const CAPTIONS = {}; // подписи на полароидах, например {1: 'наше первое фото', 5: 'буся'}
+const YM_ALBUM_TRACK = 'https://music.yandex.ru/iframe/album/18390836/track/92012507';
+const YM_LINK = 'https://music.yandex.ru/album/18390836/track/92012507';
+
+/* ============ экраны ============ */
+const S = [];
+const push = (n, tag, html, o = {}) => S.push({ n, tag, html, ...o });
+const rise = (i) => `style="animation-delay:${0.08 + i * 0.12}s"`;
+
+// intro
+const intro = {
+  intro: true,
+  html: `
+  <div class="inner">
+    <div class="tag r" ${rise(0)}>new level unlocked</div>
+    <h1 class="huge r" ${rise(1)}>FUGO<br><span class="acc">27</span></h1>
+    <p class="lead r" ${rise(2)}>Бусин, вот тебе и 27. Шок?</p>
+    <div class="track r" ${rise(3)}>
+      <div class="cities"><span>Москва</span><span>Санкт-Петербург</span></div>
+      <div class="rail"><i class="dot a"></i><b></b><i class="dot b"></i><span class="box">📦</span></div>
+      <div class="st"><span class="live">твой подарок в пути</span><span>6 октября</span></div>
+    </div>
+    <p class="r" ${rise(4)}>Я хочу сказать тебе 27 вещей, которые хочется сказать именно сейчас.</p>
+    <div class="r row" ${rise(5)}>
+      <button class="popper" data-pop aria-label="Хлопушка">🎉</button>
+      <button class="pill acc-bg" data-next>Погнали →</button>
+    </div>
+  </div>`,
+  onEnter: () => setTimeout(() => confetti(1.2), 500)
+};
+
+push(1, 'Level 27', `
+  <h2 class="r" ${rise(0)}>Новый уровень загружен</h2>
+  <p class="lead r" ${rise(1)}>27 — это не про «уже».</p>
+  <p class="mute small r" ${rise(2)}>(хотя я всё равно буду шутить, что ты уже старенький)</p>
+  <p class="r" ${rise(3)}>Это про «сколько же всего впереди»:</p>
+  <div class="stickers">
+    ${['новые треки','новые идеи','новые решения','новые деньги','новые люди','новые версии тебя'].map((t,i)=>`<span style="animation-delay:${0.6+i*0.18}s">${t}</span>`).join('')}
+  </div>
+  <p class="lead acc r" style="animation-delay:1.9s">Самое интересное только начинается…</p>
+  <button class="pill r" data-next style="animation-delay:2.1s">Согласен</button>
+`);
+
+push(2, 'FUGO', `
+  <h2 class="r" ${rise(0)}>Никита / FUGO.<br>Кто за этим?</h2>
+  <p class="lead r" ${rise(1)}>За этим стоит человек, который мечтает, пишет музыку, придумывает, пробует, ошибается, снова делает</p>
+  <p class="r" ${rise(2)}>и постепенно превращает свои мысли во что-то настоящее.</p>
+  <p class="acc r" ${rise(3)}>Мне нравится видеть, как это становится частью тебя.</p>
+  <button class="pill acc-bg r" data-next ${rise(4)}>Да, это я</button>
+`);
+
+push(3, 'Music', `
+  <h2 class="r" ${rise(0)}>Ты умеешь то, что не каждый вообще решается начать</h2>
+  <p class="lead acc r" ${rise(1)}>Выпускать своё.</p>
+  <p class="r" ${rise(2)}>Пусть сейчас это только начало. Пусть не всё получается идеально. Пусть иногда хочется всё бросить.</p>
+  <p class="lead r" ${rise(3)}>Главное — ты уже начал. А всё остальное впереди.</p>
+  <p class="mute r" ${rise(4)}>Очень хочу, чтобы ты верил в себя, потому что я верю в тебя.</p>
+`);
+
+push(4, 'One day', `
+  <h2 class="r" ${rise(0)}>Я очень хочу однажды увидеть тебя на сцене</h2>
+  <div class="stack mute r" ${rise(1)}><p>Не в своей комнате.</p><p>Не в наушниках.</p><p>Не в телефоне.</p></div>
+  <p class="lead r" ${rise(2)}>А там, где ты стоишь перед людьми и они знают слова твоих песен.</p>
+  <p class="acc r" ${rise(3)}>И я где-нибудь в зале такая: «Ну да. А я вообще-то знала, что так будет».</p>
+`);
+
+push(5, 'Don’t stop', `
+  <h2 class="r" ${rise(0)}>Если когда-нибудь покажется, что ничего не получается</h2>
+  <p class="huge acc r" style="font-family:var(--disp);font-weight:800;font-size:clamp(34px,11vw,48px);line-height:1;animation-delay:.3s">то тебе КАЖЕТСЯ.</p>
+  <p class="r" ${rise(3)}>Это просто часть твоего пути. Просто продолжай идти.</p>
+  <button class="pill acc-bg r" data-next ${rise(4)}>Иду →</button>
+`);
+
+push(6, 'Believe', `
+  <p class="r" ${rise(0)}>Есть одна вещь, которую я очень хочу тебе пожелать.</p>
+  <h2 class="r" ${rise(1)}>Чтобы однажды ты поверил в себя так же сильно, как в тебя верят люди рядом</h2>
+  <p class="lead acc r" ${rise(2)}>Потому что ты правда можешь больше, чем иногда думаешь.</p>
+`);
+
+push(7, 'Not the end', `
+  <h2 class="r" ${rise(0)}>Твоя нынешняя работа — это не вся твоя история</h2>
+  <p class="r" ${rise(1)}>Это просто то, где ты сейчас.</p>
+  <p class="lead r" ${rise(2)}>Ты можешь работать, зарабатывать, разбираться с жизнью и параллельно строить то, что действительно твоё.</p>
+  <p class="acc r" ${rise(3)}>Одна глава не определяет всю книгу. Йоу.</p>
+`);
+
+push(8, 'Money', `
+  <h2 class="r" ${rise(0)}>Пусть денег становится намного больше, чем поводов о них переживать</h2>
+  <p class="mute r" ${rise(1)}>Чтобы ты думал не «а могу ли я себе это позволить?»</p>
+  <p class="lead acc r" ${rise(2)}>а «хочу — значит, сделаю».</p>
+  <p class="r" ${rise(3)}>И чтобы деньги были не ограничением, а инструментом для твоей жизни.</p>
+`);
+
+push(9, '27 goals', `
+  <h2 class="r" ${rise(0)}>Я желаю тебе не просто успеха</h2>
+  <p class="r" ${rise(1)}>А чтобы появлялись конкретные вещи:</p>
+  <ul class="list">
+    <li class="r" ${rise(2)}><span>→</span>первая большая сумма</li>
+    <li class="r" ${rise(3)}><span>→</span>первая песня, которой ты правда гордишься</li>
+    <li class="r" ${rise(4)}><span>→</span>первое выступление</li>
+    <li class="r" ${rise(5)}><span>→</span>первый момент, когда поймёшь: «Бля. Я реально это сделал»</li>
+  </ul>
+  <p class="acc r" ${rise(6)}>И ты это сделаешь, ясно? Меня не волнует.</p>
+`);
+
+push(10, 'Cat loading…', `
+  <div class="cat r" ${rise(0)}>🐈</div>
+  <div class="stack r" ${rise(1)}>
+    <div class="code">СТАТУС: <span class="acc">НЕ ЗАГРУЖЕН</span></div>
+    <div class="load"><i></i></div>
+  </div>
+  <p class="r" ${rise(2)}>Но вероятность появления маленького пушистого человека в твоей жизни с каждым годом увеличивается.</p>
+  <p class="acc lead r" ${rise(3)}>Но я и Кики против.</p>
+`);
+
+push(11, 'Family', `
+  <h2 class="r" ${rise(0)}>Ты очень любишь своих</h2>
+  <p class="r" ${rise(1)}>И это одна из вещей, которые мне в тебе особенно нравятся.</p>
+  <p class="lead r" ${rise(2)}>Твои близкие. Твоя мама. Твоя бабушка.</p>
+  <p class="r" ${rise(3)}>Есть люди, которым особенно важно, каким человеком ты становишься.</p>
+  <p class="acc r" ${rise(4)}>И мне кажется, им правда есть чем тобой гордиться.</p>
+`);
+
+push(12, 'About you', `
+  <h2 class="r" ${rise(0)}>Ты, бусинка,</h2>
+  <div class="quals">
+    ${['самый красивый','самый добрый','самый смешной','самый стильный','самый настоящий и искренний'].map((t,i)=>`<div class="r" ${rise(i+1)}>${t.replace('самый','<em>самый</em>')}</div>`).join('')}
+  </div>
+  <p class="mute r" style="animation-delay:1.1s">а ещё:</p>
+  <div class="stickers">
+    ${['вонючка','пердушка','мармалыга','козявка','какашка на палке','обезьянка'].map((t,i)=>`<span style="animation-delay:${1.3+i*0.2}s">${t}</span>`).join('')}
+  </div>
+  <p class="r" style="animation-delay:2.7s">Надеюсь, с возрастом ты не потеряешь эти качества.</p>
+`);
+
+push(13, '27 things', `
+  <h2 class="r" ${rise(0)}>В тебе есть то, что невозможно купить</h2>
+  <ul class="list">
+    ${['чувство юмора','характер','свой вкус','умение любить','способность мечтать','любовь к музыке','доброта','честность','можешь быть собой','настойчивость','мужественность','пробовать новое'].map((t,i)=>`<li class="r" style="animation-delay:${0.3+i*0.16}s"><span>${String(i+1).padStart(2,'0')}</span>${t}</li>`).join('')}
+    <li class="tired r" style="animation-delay:2.5s"><span>…</span>и так далее. Что-то я устала, ахахаха, времени мало, не успеваю</li>
+  </ul>
+  <p class="lead acc r" style="animation-delay:2.9s">Короче. Береги это.</p>
+`);
+
+push(14, 'You’ve already done a lot', `
+  <h2 class="r" ${rise(0)}>Иногда мы смотрим только туда, куда ещё не пришли</h2>
+  <p class="lead r" ${rise(1)}>Но если посмотреть назад — ты уже многое сделал.</p>
+  <p class="acc r" ${rise(2)}>Не обесценивай путь только потому, что он ещё не закончился.</p>
+`);
+
+push(15, 'Plot twist', `
+  <h2 class="r" ${rise(0)}>Официальное предсказание</h2>
+  <p class="mute r" ${rise(1)}>Вытяни карту. Тапни по ней.</p>
+  <div class="tw r" ${rise(2)}><div class="tarot" id="tarot">
+    <div class="c">
+      <div class="f back"><div class="st">✦</div><small>FUGO · 27</small></div>
+      <div class="f front"><div class="n">XVII</div><div class="s">✨</div><div class="t">Сюжетный<br>поворот</div></div>
+    </div>
+  </div></div>
+  <div id="tarotText" style="display:none" class="stack">
+    <p class="lead">27-й год принесёт тебе несколько сюжетных поворотов.</p>
+    <p>Некоторые ты сейчас даже не можешь представить. <span class="acc">И это хорошо.</span></p>
+    <button class="pill acc-bg" data-next>Дальше →</button>
+  </div>
+`, { onEnter: (el) => {
+  const t = el.querySelector('#tarot');
+  t.addEventListener('click', () => {
+    if (t.classList.contains('flip')) return;
+    t.classList.add('flip');
+    confetti(.7);
+    setTimeout(() => { const x = el.querySelector('#tarotText'); x.style.display = 'flex'; x.style.animation = 'rise .6s both'; }, 900);
+  });
+}});
+
+push(16, 'FUGO forecast', `
+  <h2 class="r" ${rise(0)}>Прогноз на год</h2>
+  <div class="fc">
+    <div class="r" ${rise(1)}><span>🎵 музыка</span><b><span class="up">↑↑↑</span></b></div>
+    <div class="r" ${rise(2)}><span>💸 деньги</span><b><span class="up" style="animation-delay:.2s">↑↑↑</span></b></div>
+    <div class="r" ${rise(3)}><span>🐈 кот</span><b>ээээ, ну обсудим</b></div>
+    <div class="r" ${rise(4)}><span>💡 идеи</span><b>∞</b></div>
+    <div class="r" ${rise(5)}><span>❤️ любовь</span><b>stable <span class="up" style="animation-delay:.4s">↑↑↑</span></b></div>
+    <div class="r" ${rise(6)}><span>🤡 странные решения</span><b>100%</b></div>
+  </div>
+  <p class="lead acc r" ${rise(7)}>Общий прогноз: перспективный, хаха.</p>
+`);
+
+push(17, '27', `
+  <h2 class="r" ${rise(0)}>Мне нравится, что твои 27 начинаются именно сейчас</h2>
+  <p class="r" ${rise(1)}>Не с готового результата.</p>
+  <p class="lead r" ${rise(2)}>А с процесса.</p>
+  <p class="acc r" ${rise(3)}>И в этом есть что-то очень настоящее.</p>
+`);
+
+push(18, 'Someday', `
+  <h2 class="r" ${rise(0)}>Когда-нибудь ты посмотришь на этот сайт и будешь смеяться</h2>
+  <p class="r" ${rise(1)}>Потому что часть того, что я сейчас тебе желаю, уже будет твоей реальностью.</p>
+  <p class="lead acc r" ${rise(2)}>И мне очень интересно, что именно сбудется первым.</p>
+`);
+
+push(19, '27 reasons', `
+  <h2 class="r" ${rise(0)}>Почему тебе нельзя сдаваться</h2>
+  <p class="mute r" ${rise(1)}>Потому что ты ещё не…</p>
+  <ul class="list">
+    ${['написал свою лучшую песню','сыграл своё лучшее выступление','заработал свои большие деньги','завёл кота','придумал все свои лучшие идеи','увидел, каким можешь стать'].map((t,i)=>`<li class="r" ${rise(i+2)}><span>→</span>${t}</li>`).join('')}
+  </ul>
+  <p class="lead acc r" ${rise(9)}>И потому что мы ещё не посмотрели, что там дальше.</p>
+`);
+
+push(20, 'About us', `
+  <h2 class="r" ${rise(0)}>А ещё этот год подарил тебе нас</h2>
+  <p class="lead r" ${rise(1)}>И я почему-то очень верю, что это произошло не просто так.</p>
+  <p class="r" ${rise(2)}>Не знаю, что именно приготовила нам жизнь.</p>
+  <p class="acc r" ${rise(3)}>Но мне нравится узнавать это вместе с тобой.</p>
+`);
+
+push(21, 'My wish for you', `
+  <h2 class="r" ${rise(0)}>Я хочу, чтобы ты был счастлив</h2>
+  <div class="stack mute r" ${rise(1)}>
+    <p>Не успешен ради картинки.</p><p>Не богат ради цифры.</p><p>Не идеален.</p>
+  </div>
+  <p class="lead acc r" ${rise(2)}>А именно счастлив.</p>
+  <p class="r" ${rise(3)}>Чтобы тебе нравилась твоя жизнь, люди рядом и тот, кем ты становишься.</p>
+  <p class="r" ${rise(4)}>И здоровья тебе — чтобы как у быка. Ясно? 🐂</p>
+`);
+
+push(22, 'When you forget', `
+  <h2 class="r" ${rise(0)}>Если однажды ты забудешь, что вообще-то можешь, — перечитай это</h2>
+  <p class="lead acc r" ${rise(1)}>Ты можешь.</p>
+  <div class="stack mute r" ${rise(2)}>
+    <p>Даже если страшно.</p><p>Даже если не получается с первого раза.</p><p>Даже если сейчас всё выглядит совсем не так, как хотелось.</p>
+  </div>
+  <p class="r" ${rise(3)}>Просто не решай за себя заранее, что у тебя не выйдет.</p>
+`);
+
+push(23, 'I see you', `
+  <h2 class="r" ${rise(0)}>Я вижу тебя</h2>
+  <p class="r" ${rise(1)}>Не только человека, который сейчас рядом со мной. Я вижу того, кем ты можешь стать.</p>
+  <p class="r" ${rise(2)}>И мне очень нравится эта будущая версия тебя.</p>
+  <p class="lead r" ${rise(3)}>Но ещё больше мне нравится тот Бусинка, который есть сейчас.</p>
+  <p class="acc r" ${rise(4)}>Потому что именно из него всё это и получится.</p>
+`);
+
+push(24, 'Photos', `
+  <h2 class="r" ${rise(0)}>Немного нас</h2>
+  <div class="slider r" ${rise(1)} id="slider">
+    ${PHOTOS.map((p, i) => `<div class="slide" style="--rot:${[-3, 2.5, -1.8, 3.2][i % 4]}deg"><figure class="polaroid"><img src="${p}" alt="" ${i < 3 ? '' : 'loading="lazy"'}><figcaption>${CAPTIONS[i + 1] || ''}</figcaption></figure></div>`).join('')}
+  </div>
+  <div class="gnav r" ${rise(2)}>
+    <button class="rb l" id="gPrev" aria-label="Назад">←</button>
+    <div class="cnt"><b id="gCur">01</b> / ${String(PHOTOS.length).padStart(2, '0')}</div>
+    <button class="rb" id="gNext" aria-label="Вперёд">→</button>
+  </div>
+`, { cls: 'gscreen', onEnter: (el) => {
+  const sl = el.querySelector('#slider'), slides = [...sl.children], cur = el.querySelector('#gCur');
+  let at = 0;
+  const mark = () => {
+    const c = sl.scrollLeft + sl.clientWidth / 2;
+    let best = 0, bd = 1e9;
+    slides.forEach((d, i) => { const dd = Math.abs(d.offsetLeft + d.offsetWidth / 2 - c); if (dd < bd) { bd = dd; best = i; } });
+    at = best;
+    slides.forEach((d, i) => d.classList.toggle('on', i === best));
+    cur.textContent = String(best + 1).padStart(2, '0');
+  };
+  const go = (i) => { i = Math.max(0, Math.min(slides.length - 1, i)); const d = slides[i]; sl.scrollTo({ left: d.offsetLeft + d.offsetWidth / 2 - sl.clientWidth / 2, behavior: 'smooth' }); };
+  sl.addEventListener('scroll', () => requestAnimationFrame(mark), { passive: true });
+  el.querySelector('#gPrev').onclick = () => go(at - 1);
+  el.querySelector('#gNext').onclick = () => go(at + 1);
+  slides.forEach((d, i) => d.addEventListener('click', () => go(i)));
+  setTimeout(mark, 120);
+}});
+
+push(25, 'Soundtrack', `
+  <h2 class="r" ${rise(0)}>Soundtrack of 27</h2>
+  <p class="r" ${rise(1)}>Классика. Включай погромче.</p>
+  <iframe class="ym r" ${rise(2)} allow="clipboard-write" src="${YM_ALBUM_TRACK}" title="Ирина Аллегрова — С днём рождения"></iframe>
+  <a class="pill ghost r" ${rise(3)} href="${YM_LINK}" target="_blank" rel="noopener">Открыть в Яндекс Музыке ↗</a>
+`, { scroll: true });
+
+push(26, 'From me', `
+  <div class="letter">
+    <p class="lead r" ${rise(0)}>Бусь, я очень хочу, чтобы в 27 ты наконец начал замечать в себе то, что замечают в тебе другие.</p>
+    <p class="r" ${rise(1)}>Ты важный для меня человечек. И мне хочется, чтобы ты не боялся хотеть большего от жизни.</p>
+    <p class="r" ${rise(2)}>Я хочу видеть, как ты растёшь, как выпускаешь музыку, как находишь своё, как становишься увереннее, как у тебя получается то, о чём ты сейчас только думаешь.</p>
+    <p class="r" ${rise(3)}>И если когда-нибудь тебе станет страшно, просто помни: рядом есть человек (я), который в тебя верит.</p>
+    <p class="r" ${rise(4)}>Я безумно люблю тебя, обожаю. И очень хочу посмотреть, что мы ещё успеем придумать.</p>
+    <p class="sign r" ${rise(5)}>С днём рождения, моя любовь 🤍</p>
+  </div>
+`, { scroll: true });
+
+push(27, 'Next chapter', `
+  <div class="huge big27 r" ${rise(0)}>27</div>
+  <h2 class="r" ${rise(1)}>Next chapter</h2>
+  <p class="mute r" ${rise(3)}>Ты ещё не знаешь, каким будет этот год.<br>Я тоже.</p>
+  <p class="r" ${rise(4)}>Но мне очень хочется посмотреть на него вместе с тобой.</p>
+  <p class="r" ${rise(5)}>Люблю, твоя малышка</p>
+  <p class="mute r" style="animation-delay:1.1s">Дальше интереснее 🤍</p>
+  <button class="pill acc-bg r" id="finalBtn" style="animation-delay:1.4s">PLAY NEXT CHAPTER →</button>
+`, { dark: true, onEnter: (el) => {
+  el.querySelector('.huge').style.color = '#fff';
+  el.querySelector('#finalBtn').addEventListener('click', () => {
+    confetti(3);
+    const b = el.querySelector('#finalBtn');
+    b.textContent = 'to be continued…';
+    b.disabled = true;
+    b.style.opacity = .7;
+  });
+}});
+
+/* ============ движок ============ */
+const stage = document.getElementById('stage');
+const bar = document.getElementById('bar');
+const app = document.getElementById('app');
+const hn = document.getElementById('hn');
+let idx = -1; // -1 = intro, 0..26 = cards
+bar.innerHTML = S.map(() => '<i></i>').join('');
+const segs = [...bar.children];
+
+function show(i, back = false) {
+  if (i < -1 || i > S.length - 1) return;
+  idx = i;
+  const s = i === -1 ? intro : S[i];
+  const el = document.createElement('section');
+  el.className = 'screen' + (back ? ' back' : '') + (s.dark ? ' dark' : '') + (s.cls ? ' ' + s.cls : '');
+  const inner = i === -1 ? s.html : `<div class="inner">
+      <div class="tag r">${String(s.n).padStart(2, '0')} — ${s.tag}</div>
+      ${s.html}
+    </div>`;
+  el.innerHTML = inner;
+  stage.innerHTML = '';
+  stage.appendChild(el);
+  app.classList.toggle('dark', !!s.dark);
+  document.querySelector('meta[name=theme-color]').content = s.dark ? '#0b0b0b' : '#ffffff';
+  bar.classList.toggle('on', i >= 0);
+  segs.forEach((g, k) => g.classList.toggle('done', k <= i));
+  hn.classList.toggle('on', i === -1 || i === 0);
+  if (s.onEnter) s.onEnter(el);
+  try { localStorage.setItem('fugo27_idx', i); } catch (e) {}
+}
+const next = () => show(idx + 1);
+const prev = () => show(idx - 1, true);
+
+stage.addEventListener('click', (e) => {
+  const t = e.target;
+  if (t.closest('[data-pop]')) { confetti(1); return; }
+  if (t.closest('[data-next]')) { confetti(.5); next(); return; }
+  if (t.closest('button, a, iframe, .tarot, .slider, .gnav')) return;
+  const x = e.clientX - app.getBoundingClientRect().left;
+  if (x < app.clientWidth * 0.3) prev(); else next();
+});
+let tx = 0, ty = 0, inSlider = false;
+stage.addEventListener('touchstart', e => { inSlider = !!e.target.closest('.slider'); tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+stage.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+  if (!inSlider && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) { dx < 0 ? next() : prev(); e.preventDefault(); }
+}, { passive: false });
+document.addEventListener('keydown', e => {
+  if (document.getElementById('gate').classList.contains('gone')) {
+    if (e.key === 'ArrowRight' || e.key === ' ') next();
+    if (e.key === 'ArrowLeft') prev();
+  }
+});
+
+/* ============ пароль ============ */
+const gate = document.getElementById('gate');
+const pin = document.getElementById('pin');
+let fails = 0;
+function tryPin() {
+  if (pin.value.trim() === PASSWORD) {
+    gate.classList.add('gone');
+    try { sessionStorage.setItem('fugo27_ok', '1'); } catch (e) {}
+    show(-1);
+  } else {
+    fails++;
+    pin.value = '';
+    pin.classList.remove('shake'); void pin.offsetWidth; pin.classList.add('shake');
+    document.getElementById('hint').textContent = fails >= 2 ? 'Подсказка: сколько тебе исполняется 😏' : 'Не то. Попробуй ещё.';
+  }
+}
+document.getElementById('pinForm').addEventListener('submit', e => { e.preventDefault(); tryPin(); });
+document.getElementById('pinBtn').addEventListener('click', tryPin);
+try { if (sessionStorage.getItem('fugo27_ok')) { gate.classList.add('gone'); show(-1); } } catch (e) {}
+
+/* ============ конфетти ============ */
+const cv = document.getElementById('fx');
+const cx = cv.getContext('2d');
+let parts = [], raf = null;
+function fit() { const r = app.getBoundingClientRect(); cv.width = r.width * devicePixelRatio; cv.height = r.height * devicePixelRatio; }
+addEventListener('resize', fit); fit();
+function confetti(power = 1) {
+  fit();
+  const W = cv.width, H = cv.height, cols = ['#6d1a2b', '#0b0b0b', '#b84a5f', '#e8b4bc', '#ffffff'];
+  const n = Math.round(90 * power);
+  for (let i = 0; i < n; i++) {
+    const a = -Math.PI / 2 + (Math.random() - .5) * 1.6;
+    const v = (10 + Math.random() * 16) * devicePixelRatio;
+    parts.push({
+      x: W / 2 + (Math.random() - .5) * W * .3, y: H * .75,
+      vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+      w: (6 + Math.random() * 7) * devicePixelRatio, h: (3 + Math.random() * 5) * devicePixelRatio,
+      r: Math.random() * 6, vr: (Math.random() - .5) * .4,
+      c: cols[(Math.random() * cols.length) | 0], life: 0
+    });
+  }
+  if (!raf) raf = requestAnimationFrame(tick);
+}
+function tick() {
+  cx.clearRect(0, 0, cv.width, cv.height);
+  parts = parts.filter(p => p.y < cv.height + 40 && p.life < 220);
+  for (const p of parts) {
+    p.vy += .55 * devicePixelRatio; p.vx *= .985; p.vy *= .985;
+    p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life++;
+    cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r);
+    cx.fillStyle = p.c; cx.strokeStyle = 'rgba(0,0,0,.25)'; cx.lineWidth = devicePixelRatio * .6;
+    cx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    if (p.c === '#ffffff') cx.strokeRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    cx.restore();
+  }
+  raf = parts.length ? requestAnimationFrame(tick) : null;
+}
+</script>
+</body>
+</html>
