@@ -289,6 +289,13 @@ iframe.ym{width:100%;height:244px;border:0;border-radius:22px;background:var(--a
 .tk.used{background:var(--acc-soft)}
 .tk.used .tk-top{opacity:.45}
 .tk.used .tk-stamp{opacity:1;transform:rotate(-8deg) scale(1)}
+
+.inner .pill,#gate .pill{align-self:stretch;width:100%;justify-content:space-between;text-align:left}
+.pill:not(.ghost)::after{content:"→";font-size:20px;line-height:1}
+.pill.ghost{justify-content:space-between}
+.screen.center .pill{align-self:stretch}
+.tk-in .pill{width:100%;margin:12px 0 18px}
+.row .pill{flex:1;width:auto}.popper{flex:none}
 </style>
 </head>
 <body>
@@ -399,7 +406,7 @@ const intro = {
     <p class="r" ${rise(4)}>Я хочу сказать тебе 27 вещей, которые хочется сказать именно сейчас.</p>
     <div class="r row" ${rise(5)}>
       <button class="popper" data-pop aria-label="Хлопушка">🎉</button>
-      <button class="pill acc-bg" data-next>Погнали →</button>
+      <button class="pill acc-bg" data-next>Погнали</button>
     </div>
   </div>`,
   onEnter: () => { setTimeout(() => confetti(1.2), 500); }
@@ -452,7 +459,7 @@ push(5, 'Don’t stop', `
   <h2 class="r" ${rise(0)}>Если тебе кажется, что ничего не получается</h2>
   <svg class="gr r" ${rise(1)} id="gr" viewBox="0 0 320 180"></svg>
   <p class="r" ${rise(3)}>Это просто часть твоего пути. Просто продолжай идти.</p>
-  <button class="pill acc-bg r" data-next ${rise(4)}>Иду →</button>
+  <button class="pill acc-bg r" data-next ${rise(4)}>Иду</button>
 `, { onEnter: (el) => {
   const svg = el.querySelector('#gr');
   let real = '', feel = '';
@@ -641,7 +648,7 @@ push(15, 'Plot twist', `
   <div id="tarotText" style="display:none" class="stack">
     <p class="lead">27-й год принесёт тебе 27 сюжетных поворотов.</p>
     <p>Некоторые ты сейчас даже представить не можешь. <span class="acc">И это хорошо.</span></p>
-    <button class="pill acc-bg" data-next>Дальше →</button>
+    <button class="pill acc-bg" data-next>Дальше</button>
   </div>
 `, { onEnter: (el) => {
   const t = el.querySelector('#tarot');
@@ -791,7 +798,7 @@ push(26, 'From me', `
     <p class="psign">С днём рождения, моя любовь 🤍</p>
   </div>
   <button class="pill acc-bg r" id="openL" ${rise(1)}>Открыть письмо</button>
-  <button class="pill" data-next id="afterL" style="display:none">Дальше →</button>
+  <button class="pill" data-next id="afterL" style="display:none">Дальше</button>
 `, { btn: false, onEnter: (el) => {
   const open = () => {
     const env = el.querySelector('#env');
@@ -816,7 +823,7 @@ push(27, 'Next chapter', `
   <p class="r" ${rise(4)}>Но мне очень хочется посмотреть на него вместе с тобой.</p>
   <p class="r" ${rise(5)}>Люблю, твоя малышка</p>
   <p class="mute r" style="animation-delay:1.1s">Дальше интереснее 🤍</p>
-  <button class="pill acc-bg r" id="finalBtn" style="animation-delay:1.4s">PLAY NEXT CHAPTER →</button>
+  <button class="pill acc-bg r" id="finalBtn" style="animation-delay:1.4s">PLAY NEXT CHAPTER</button>
 `, { dark: true, cls: 'center', btn: false, onEnter: (el) => {
   el.querySelector('#finalBtn').addEventListener('click', () => {
     confetti(2);
@@ -872,7 +879,7 @@ function show(i, back = false) {
   el.className = 'screen' + (back ? ' back' : '') + (s.dark ? ' dark' : '') + (s.cls ? ' ' + s.cls : '');
   let body = s.html;
   if (i >= 0 && s.btn !== false && i < S.length - 1 && !body.includes('data-next'))
-    body += `<button class="pill acc-bg r" data-next style="animation-delay:${0.5 + (body.match(/class="[^"]*\br\b/g) || []).length * 0.1}s">${BTN[s.n] || 'Дальше →'}</button>`;
+    body += `<button class="pill acc-bg r" data-next style="animation-delay:${0.5 + (body.match(/class="[^"]*\br\b/g) || []).length * 0.1}s">${BTN[s.n] || 'Дальше'}</button>`;
   const inner = i === -1 ? body : `<div class="inner">
       <div class="tag r">${String(s.n).padStart(2, '0')} — ${s.tag}</div>
       ${body}
