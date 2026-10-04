@@ -194,7 +194,7 @@ iframe.ym{width:100%;height:244px;border:0;border-radius:22px;background:var(--a
 /* ============ настройки ============ */
 const PASSWORD = '27';
 // Фото: положи файлы в папку photos/ и впиши имена, например ['photos/1.jpg','photos/2.jpg']
-const PHOTOS = Array.from({length: 19}, (_, i) => `photos/p${String(i + 1).padStart(2, '0')}.jpg`);
+const PHOTOS = Array.from({length: 19}, (_, i) => `p${String(i + 1).padStart(2, '0')}.jpg`);
 const CAPTIONS = {}; // подписи на полароидах, например {1: 'наше первое фото', 5: 'буся'}
 const YM_ALBUM_TRACK = 'https://music.yandex.ru/iframe/album/18390836/track/92012507';
 const YM_LINK = 'https://music.yandex.ru/album/18390836/track/92012507';
